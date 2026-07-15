@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import '../models/room_model.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:intl/intl.dart';
+import '../models/reservation_model.dart';
+import '../services/reservation_service.dart';
 import 'room_form.dart';
+import 'reservation_detail.dart';
+import '../widgets/three_dots_loader.dart';
 
 class RoomDetail extends StatefulWidget {
   final RoomModel room;
@@ -14,11 +19,39 @@ class RoomDetail extends StatefulWidget {
 
 class _RoomDetailState extends State<RoomDetail> {
   late RoomModel _room;
+  List<ReservationModel> _history = [];
+  bool _isLoadingHistory = true;
+  String _historyError = '';
 
   @override
   void initState() {
     super.initState();
     _room = widget.room;
+    _loadHistory();
+  }
+
+  Future<void> _loadHistory() async {
+    try {
+      final allReservations = await ReservationService.getAll();
+      if (mounted) {
+        setState(() {
+          _history = allReservations.where((r) => r.idHabitacion == _room.idHabitacion).toList();
+          _history.sort((a, b) {
+            final dateA = DateTime.tryParse(a.fechaReserva ?? '') ?? DateTime(0);
+            final dateB = DateTime.tryParse(b.fechaReserva ?? '') ?? DateTime(0);
+            return dateB.compareTo(dateA); // Descendente
+          });
+          _isLoadingHistory = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _historyError = 'Error al cargar historial';
+          _isLoadingHistory = false;
+        });
+      }
+    }
   }
 
   @override
@@ -201,7 +234,120 @@ class _RoomDetailState extends State<RoomDetail> {
                     const SizedBox(height: 32),
                     
                     const Text(
-                      'Historial y Fechas',
+                      'Historial de Ocupación',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF334155),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    if (_isLoadingHistory)
+                      const Center(child: Padding(padding: EdgeInsets.all(16.0), child: ThreeDotsLoader()))
+                    else if (_historyError.isNotEmpty)
+                      Center(child: Text(_historyError, style: const TextStyle(color: Colors.red)))
+                    else if (_history.isEmpty)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Text('No hay historial para esta habitación', style: TextStyle(color: Colors.grey)),
+                        ),
+                      )
+                    else
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _history.length,
+                        itemBuilder: (context, index) {
+                          final reserva = _history[index];
+                          final bool isConfirmada = reserva.estado?.toUpperCase() == 'CONFIRMADA';
+                          final bool isCheckin = reserva.estado?.toUpperCase() == 'CHECKIN';
+                          final bool isCheckout = reserva.estado?.toUpperCase() == 'CHECKOUT';
+                          
+                          Color estadoColor = Colors.grey;
+                          if (isConfirmada) estadoColor = Colors.green;
+                          if (isCheckin) estadoColor = colorScheme.primary;
+                          if (isCheckout) estadoColor = Colors.purple;
+
+                          final checkinStr = _formatShortDate(reserva.fechaCheckin);
+                          final checkoutStr = _formatShortDate(reserva.fechaCheckout);
+
+                          return Card(
+                            elevation: 0,
+                            margin: const EdgeInsets.only(bottom: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => ReservationDetail(
+                                    reservation: reserva,
+                                    roomName: 'Hab. ${_room.numero} - ${_room.tipo}',
+                                  )),
+                                );
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: estadoColor.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Icon(Icons.bookmark, color: estadoColor),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            reserva.huespedNombre ?? 'Huésped N/A',
+                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            '$checkinStr a $checkoutStr',
+                                            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: estadoColor.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        reserva.estado ?? 'N/A',
+                                        style: TextStyle(
+                                          color: estadoColor,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    
+                    const SizedBox(height: 32),
+                    
+                    const Text(
+                      'Detalles Técnicos',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -303,6 +449,16 @@ class _RoomDetailState extends State<RoomDetail> {
     try {
       final date = DateTime.parse(isoDate).toLocal();
       return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return isoDate;
+    }
+  }
+
+  String _formatShortDate(String? isoDate) {
+    if (isoDate == null) return 'N/A';
+    try {
+      final date = DateTime.parse(isoDate).toLocal();
+      return DateFormat('dd MMM', 'es').format(date);
     } catch (e) {
       return isoDate;
     }
