@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/reservation_model.dart';
+import '../models/room_model.dart';
 import '../services/reservation_service.dart';
+import '../services/room_service.dart';
 import '../widgets/three_dots_loader.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'reservation_detail.dart';
 import 'reservation_form.dart';
 
 class ReservationList extends StatefulWidget {
@@ -14,8 +18,9 @@ class ReservationList extends StatefulWidget {
 
 class _ReservationListState extends State<ReservationList> {
   String _error = '';
-  bool _cargando = false;
+  bool _cargando = true;
   List<ReservationModel> _reservations = [];
+  List<RoomModel> _habitaciones = [];
 
   Future<void> _cargarDatos() async {
     setState(() {
@@ -24,8 +29,11 @@ class _ReservationListState extends State<ReservationList> {
     });
     try {
       final reservations = await ReservationService.getAll();
+      final habitaciones = await RoomService.getAll();
+      
       setState(() {
         _reservations = reservations;
+        _habitaciones = habitaciones;
       });
     } catch (e) {
       setState(() {
@@ -120,23 +128,29 @@ class _ReservationListState extends State<ReservationList> {
                           padding: const EdgeInsets.all(16),
                           itemCount: _reservations.length,
                           itemBuilder: (context, index) {
-                            return _buildReservationCard(_reservations[index], theme, colorScheme);
+                            return _buildReservationCard(_reservations[index], theme, colorScheme)
+                                .animate()
+                                .slideY(begin: 0.1, delay: (index * 50).ms, duration: 400.ms, curve: Curves.easeOut)
+                                .fade(duration: 400.ms);
                           },
                         ),
                 ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'fab_reservations',
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ReservationForm()),
-          );
-          if (result == true) {
-            _cargarDatos();
-          }
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('Nueva Reserva'),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 90.0),
+        child: FloatingActionButton.extended(
+          heroTag: 'fab_reservations',
+          onPressed: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ReservationForm()),
+            );
+            if (result == true) {
+              _cargarDatos();
+            }
+          },
+          icon: const Icon(Icons.add),
+          label: const Text('Nueva Reserva'),
+        ),
       ),
     );
   }
@@ -220,24 +234,48 @@ class _ReservationListState extends State<ReservationList> {
         statusBg = Colors.grey.shade100;
     }
 
+    String roomName = 'Habitación N/A';
+    if (reservation.idHabitacion != null) {
+      final room = _habitaciones.cast<RoomModel?>().firstWhere(
+        (r) => r?.idHabitacion == reservation.idHabitacion,
+        orElse: () => null,
+      );
+      if (room != null) {
+        roomName = 'Hab. ${room.numero} - ${room.tipo}';
+      }
+    }
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ReservationDetail(reservation: reservation, roomName: roomName)),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  reservation.codigo ?? '#UNKNOWN',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    color: Color(0xFF64748B),
+                Expanded(
+                  child: Text(
+                    reservation.codigo ?? '#UNKNOWN',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Color(0xFF64748B),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
@@ -280,14 +318,27 @@ class _ReservationListState extends State<ReservationList> {
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        'C.I: ${reservation.huespedCedula ?? 'N/A'}',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFF64748B),
-                        ),
+                      Row(
+                        children: [
+                          const Icon(Icons.meeting_room_rounded, size: 14, color: Color(0xFF64748B)),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              roomName,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF64748B),
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -322,11 +373,13 @@ class _ReservationListState extends State<ReservationList> {
               children: [
                 Expanded(
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildDateColumn('Check-in', _formatDate(reservation.fechaCheckin), Icons.flight_land_rounded),
-                      const Icon(Icons.arrow_forward_rounded, size: 16, color: Color(0xFFCBD5E1)),
-                      _buildDateColumn('Check-out', _formatDate(reservation.fechaCheckout), Icons.flight_takeoff_rounded),
+                      Expanded(child: _buildDateColumn('Check-in', _formatDate(reservation.fechaCheckin), Icons.flight_land_rounded)),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4.0),
+                        child: Icon(Icons.arrow_forward_rounded, size: 14, color: Color(0xFFCBD5E1)),
+                      ),
+                      Expanded(child: _buildDateColumn('Check-out', _formatDate(reservation.fechaCheckout), Icons.flight_takeoff_rounded)),
                     ],
                   ),
                 ),
@@ -360,35 +413,43 @@ class _ReservationListState extends State<ReservationList> {
           ],
         ),
       ),
+      ),
     );
   }
 
   Widget _buildDateColumn(String label, String date, IconData icon) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 16, color: const Color(0xFF64748B)),
-        const SizedBox(width: 6),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF94A3B8),
-                letterSpacing: 0.5,
+        const SizedBox(width: 4),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF94A3B8),
+                  letterSpacing: 0.5,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-            Text(
-              date,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF334155),
+              Text(
+                date,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF334155),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );

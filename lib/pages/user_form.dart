@@ -238,7 +238,10 @@ class _UserFormState extends State<UserForm> {
               ElevatedButton.icon(
                 onPressed: _guardado ? null : _guardarDatos,
                 icon: _guardado 
-                    ? const SizedBox(width: 30, height: 20, child: Center(child: ThreeDotsLoader(color: Colors.white)))
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8.0),
+                        child: ThreeDotsLoader(color: Colors.white),
+                      )
                     : const Icon(Icons.save_rounded),
                 label: Text(_esEdicion ? 'Guardar cambios' : 'Registrar huésped'),
               ),

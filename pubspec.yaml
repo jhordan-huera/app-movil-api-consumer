@@ -36,6 +36,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   http: ^1.6.0
   intl: ^0.20.3
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.0
 
 dev_dependencies:
   flutter_test:

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import '../services/user_service.dart';
 import '../widgets/three_dots_loader.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'user_form.dart';
+import 'user_detail.dart';
 
 class UserList extends StatefulWidget {
   const UserList({super.key});
@@ -99,11 +101,14 @@ class _UserListState extends State<UserList> {
           )
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'fab_users',
-        onPressed: () => _abrirFormulario(),
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Nuevo Huésped', style: TextStyle(fontWeight: FontWeight.w600)),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 90.0),
+        child: FloatingActionButton.extended(
+          heroTag: 'fab_users',
+          onPressed: () => _abrirFormulario(),
+          icon: const Icon(Icons.add_rounded),
+          label: const Text('Nuevo Huésped', style: TextStyle(fontWeight: FontWeight.w600)),
+        ),
       ),
       body: _cargando
           ? const Center(child: ThreeDotsLoader())
@@ -171,8 +176,19 @@ class _UserListState extends State<UserList> {
                             final user = _users[index];
                             return Card(
                               margin: const EdgeInsets.only(bottom: 12),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(16),
+                                onTap: () async {
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => UserDetail(user: user)),
+                                  );
+                                  if (result == true) {
+                                    _cargarDatos();
+                                  }
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -229,7 +245,8 @@ class _UserListState extends State<UserList> {
                                   ],
                                 ),
                               ),
-                            );
+                            ),
+                          ).animate().slideY(begin: 0.1, delay: (index * 50).ms, duration: 400.ms, curve: Curves.easeOut).fade(duration: 400.ms);
                           },
                         ),
                 ),
