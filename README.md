@@ -5,7 +5,7 @@ Este documento presenta las evidencias visuales del funcionamiento de la aplicac
 ## 1. Gestión de Huéspedes
 Lista principal de los huéspedes registrados en el sistema. Permite visualizar la información de contacto, editar y eliminar registros.
 
-![Lista de Huéspedes](ruta/a/tu/captura_huespedes.jpg)
+<img width="200" height="400" alt="image" src="https://github.com/user-attachments/assets/9057eaf8-addf-4732-a984-276541758b9b" />
 *Figura 1: Pantalla de Lista de Huéspedes con diseño responsivo.*
 
 ## 2. Formularios (Crear y Editar)
