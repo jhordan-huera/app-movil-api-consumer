@@ -123,20 +123,43 @@ class _ReservationListState extends State<ReservationList> {
                   onRefresh: _cargarDatos,
                   child: _reservations.isEmpty
                       ? _buildEmptyState(theme, colorScheme)
-                      : ListView.builder(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: const EdgeInsets.all(16),
-                          itemCount: _reservations.length,
-                          itemBuilder: (context, index) {
-                            return _buildReservationCard(_reservations[index], theme, colorScheme)
-                                .animate()
-                                .slideY(begin: 0.1, delay: (index * 50).ms, duration: 400.ms, curve: Curves.easeOut)
-                                .fade(duration: 400.ms);
+                      : LayoutBuilder(
+                          builder: (context, constraints) {
+                            if (constraints.maxWidth >= 600) {
+                              return GridView.builder(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                padding: const EdgeInsets.fromLTRB(16, 16, 16, 180), // Extra bottom padding for FAB and Nav
+                                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                                  maxCrossAxisExtent: 450, // Tarjetas de reserva son más anchas
+                                  mainAxisExtent: 230, // Altura aproximada
+                                  crossAxisSpacing: 16,
+                                  mainAxisSpacing: 0,
+                                ),
+                                itemCount: _reservations.length,
+                                itemBuilder: (context, index) {
+                                  return _buildReservationCard(_reservations[index], theme, colorScheme)
+                                      .animate()
+                                      .slideY(begin: 0.1, delay: (index * 50).ms, duration: 400.ms, curve: Curves.easeOut)
+                                      .fade(duration: 400.ms);
+                                },
+                              );
+                            }
+                            return ListView.builder(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 180), // Extra bottom padding for FAB and Nav
+                              itemCount: _reservations.length,
+                              itemBuilder: (context, index) {
+                                return _buildReservationCard(_reservations[index], theme, colorScheme)
+                                    .animate()
+                                    .slideY(begin: 0.1, delay: (index * 50).ms, duration: 400.ms, curve: Curves.easeOut)
+                                    .fade(duration: 400.ms);
+                              },
+                            );
                           },
                         ),
                 ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 90.0),
+        padding: const EdgeInsets.only(bottom: 110.0), // Increased to avoid overlap with floating bottom nav
         child: FloatingActionButton.extended(
           heroTag: 'fab_reservations',
           onPressed: () async {

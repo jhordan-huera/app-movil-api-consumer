@@ -6,31 +6,27 @@ Este documento presenta las evidencias visuales del funcionamiento de la aplicac
 Lista principal de los huéspedes registrados en el sistema. Permite visualizar la información de contacto, editar y eliminar registros.
 
 <img width="200" height="400" alt="image" src="https://github.com/user-attachments/assets/9057eaf8-addf-4732-a984-276541758b9b" />
+
 *Figura 1: Pantalla de Lista de Huéspedes con diseño responsivo.*
 
 ## 2. Formularios (Crear y Editar)
 Interfaz para el ingreso y modificación de datos tanto para huéspedes, habitaciones y reservas.
 
-![Formulario de Registro](ruta/a/tu/captura_formulario.jpg)
+<img src="./imagenes/image-1.png" width="200" />
+
 *Figura 2: Pantalla de formulario para crear/editar registros.*
 
 ## 3. Gestión de Habitaciones
 Visualización del estado y listado de las habitaciones disponibles en el hotel.
 
-![Lista de Habitaciones](ruta/a/tu/captura_habitaciones.jpg)
+<img src="./imagenes/image-2.png" width="200" />
+
 *Figura 3: Pantalla de visualización de Habitaciones.*
 
 ## 4. Gestión de Reservas
 Control y registro de las reservaciones realizadas.
 
-![Lista de Reservas](ruta/a/tu/captura_reservas.jpg)
+<img src="./imagenes/image-3.png" width="200" />
+
 *Figura 4: Pantalla de control de Reservas.*
 
-## 5. Diseño Adaptativo (Opcional)
-Evidencia de la correcta adaptación de la interfaz gráfica a pantallas más anchas (tablets/web).
-
-![Diseño Responsivo](ruta/a/tu/captura_responsivo.jpg)
-*Figura 5: Vista de la aplicación adaptada a un formato de pantalla ancha.*
-
----
-*Nota: Reemplaza los textos `ruta/a/tu/captura_...` con la ruta real o enlace donde hayas subido tus capturas de pantalla (por ejemplo, arrastrando las imágenes directamente aquí si usas GitHub).*

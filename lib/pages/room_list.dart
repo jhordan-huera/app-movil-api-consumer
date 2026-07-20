@@ -111,25 +111,58 @@ class _RoomListState extends State<RoomList> {
                           children: [
                             _buildFilterChips(theme, colorScheme),
                             Expanded(
-                              child: ListView.builder(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                itemCount: _rooms.length,
-                                itemBuilder: (context, index) {
-                                  final room = _rooms[index];
-                                  if (_filtroActual == 'DISPONIBLES' && room.estado?.toUpperCase() != 'DISPONIBLE') {
-                                    return const SizedBox.shrink();
+                              child: Builder(
+                                builder: (context) {
+                                  final filteredRooms = _rooms.where((room) {
+                                    if (_filtroActual == 'DISPONIBLES' && room.estado?.toUpperCase() != 'DISPONIBLE') return false;
+                                    if (_filtroActual == 'OCUPADAS' && room.estado?.toUpperCase() != 'OCUPADA') return false;
+                                    if (_filtroActual == 'MANTENIMIENTO' && room.estado?.toUpperCase() != 'MANTENIMIENTO') return false;
+                                    return true;
+                                  }).toList();
+
+                                  if (filteredRooms.isEmpty) {
+                                    return Center(
+                                      child: Text(
+                                        'No hay habitaciones con este filtro',
+                                        style: TextStyle(color: colorScheme.onSurfaceVariant),
+                                      ),
+                                    );
                                   }
-                                  if (_filtroActual == 'OCUPADAS' && room.estado?.toUpperCase() != 'OCUPADA') {
-                                    return const SizedBox.shrink();
-                                  }
-                                  if (_filtroActual == 'MANTENIMIENTO' && room.estado?.toUpperCase() != 'MANTENIMIENTO') {
-                                    return const SizedBox.shrink();
-                                  }
-                                  return _buildRoomCard(room, theme, colorScheme)
-                                      .animate()
-                                      .slideY(begin: 0.1, delay: (index * 50).ms, duration: 400.ms, curve: Curves.easeOut)
-                                      .fade(duration: 400.ms);
+
+                                  return LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      if (constraints.maxWidth >= 600) {
+                                        return GridView.builder(
+                                          physics: const AlwaysScrollableScrollPhysics(),
+                                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 180), // Extra bottom padding for FAB and Nav
+                                          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                                            maxCrossAxisExtent: 400,
+                                            mainAxisExtent: 240, // Fixed height for room cards
+                                            crossAxisSpacing: 16,
+                                            mainAxisSpacing: 0,
+                                          ),
+                                          itemCount: filteredRooms.length,
+                                          itemBuilder: (context, index) {
+                                            return _buildRoomCard(filteredRooms[index], theme, colorScheme)
+                                                .animate()
+                                                .slideY(begin: 0.1, delay: (index * 50).ms, duration: 400.ms, curve: Curves.easeOut)
+                                                .fade(duration: 400.ms);
+                                          },
+                                        );
+                                      }
+                                      return ListView.builder(
+                                        physics: const AlwaysScrollableScrollPhysics(),
+                                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 180), // Extra bottom padding for FAB and Nav
+                                        itemCount: filteredRooms.length,
+                                        itemBuilder: (context, index) {
+                                          return _buildRoomCard(filteredRooms[index], theme, colorScheme)
+                                              .animate()
+                                              .slideY(begin: 0.1, delay: (index * 50).ms, duration: 400.ms, curve: Curves.easeOut)
+                                              .fade(duration: 400.ms);
+                                        },
+                                      );
+                                    },
+                                  );
                                 },
                               ),
                             ),
@@ -137,7 +170,7 @@ class _RoomListState extends State<RoomList> {
                         ),
                 ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 90.0),
+        padding: const EdgeInsets.only(bottom: 110.0), // Increased to avoid overlap with floating bottom nav
         child: FloatingActionButton.extended(
           heroTag: 'fab_rooms',
           onPressed: () async {
