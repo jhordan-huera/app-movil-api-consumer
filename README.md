@@ -1,51 +1,36 @@
-# Informe de Funcionamiento: Sistema de Gestión Hotelera
-**Autor:** Jhordan Huera
-**Materia:** Aplicaciones Móviles - 7mo Semestre
+# Reporte de Funcionamiento - Hotel Admin App
 
-## Resumen Ejecutivo
-Este documento detalla el funcionamiento y las mejoras implementadas en la **Aplicación Móvil (Frontend en Flutter)** para el sistema de gestión de reservas de hotel. El objetivo principal de estos cambios fue mejorar drásticamente la experiencia de usuario (UX) mediante validaciones, indicadores visuales, diseño responsivo y la prevención de errores comunes al momento de realizar reservaciones.
+Este documento presenta las evidencias visuales del funcionamiento de la aplicación móvil de administración de hotel.
 
----
+## 1. Gestión de Huéspedes
+Lista principal de los huéspedes registrados en el sistema. Permite visualizar la información de contacto, editar y eliminar registros.
 
-## 1. Configuración y Conexión
-La aplicación móvil está configurada para consumir los servicios del backend local.
-* **URL de la API en uso:** `https://hotel-api-silk.vercel.app/api`
-* Esta URL base es utilizada por todos los servicios (`RoomService`, `ReservationService`, `UserService`) para sincronizar la información de huéspedes, habitaciones y reservas en tiempo real.
+![Lista de Huéspedes](ruta/a/tu/captura_huespedes.jpg)
+*Figura 1: Pantalla de Lista de Huéspedes con diseño responsivo.*
 
----
+## 2. Formularios (Crear y Editar)
+Interfaz para el ingreso y modificación de datos tanto para huéspedes, habitaciones y reservas.
 
-## 2. Gestión de Habitaciones
-La interfaz de habitaciones fue completamente renovada para ofrecer claridad visual inmediata al recepcionista.
+![Formulario de Registro](ruta/a/tu/captura_formulario.jpg)
+*Figura 2: Pantalla de formulario para crear/editar registros.*
 
-### A. Indicadores Visuales y Filtros Interactivos
-* Se integró un sistema de "Chips" (botones de filtrado) en la pantalla de habitaciones, permitiendo clasificar el inventario rápidamente en: **Todas**, **Disponibles**, **Ocupadas** y **Mantenimiento**.
-* **Diseño Dinámico de Tarjetas (Cards):**
-  * **Verde (Disponible):** Opacidad 100%, con borde verde y sombra elevada (lista para uso).
-  * **Rojo (Ocupada):** Opacidad reducida, tarjeta más plana indicando que está en uso.
-  * **Naranja (Mantenimiento):** Iconografía y estilo naranja para advertir que está fuera de servicio.
+## 3. Gestión de Habitaciones
+Visualización del estado y listado de las habitaciones disponibles en el hotel.
 
-> **Nota:** Pantalla de la lista de habitaciones mostrando los filtros y los diferentes colores de las tarjetas.
+![Lista de Habitaciones](ruta/a/tu/captura_habitaciones.jpg)
+*Figura 3: Pantalla de visualización de Habitaciones.*
 
-![Captura: Lista de Habitaciones y Filtros](<!-- REEMPLAZA ESTO CON LA RUTA O NOMBRE DE TU IMAGEN -->)
+## 4. Gestión de Reservas
+Control y registro de las reservaciones realizadas.
 
-### B. Pantalla de Detalles de Habitación
-Al hacer clic en cualquier tarjeta de habitación, se navega a una vista de detalles.
-* Muestra el número, tipo y estado de la habitación de forma inmersiva usando los colores temáticos de la aplicación (Azul Marino y Dorado).
-* Lista características, descripción, capacidad, piso y el historial de actualización en la base de datos.
-* Incluye un acceso rápido (ícono de lápiz) para editar su estado directamente desde los detalles sin perder contexto.
+![Lista de Reservas](ruta/a/tu/captura_reservas.jpg)
+*Figura 4: Pantalla de control de Reservas.*
 
-> **Nota:** Pantalla de Detalles de Habitación.
+## 5. Diseño Adaptativo (Opcional)
+Evidencia de la correcta adaptación de la interfaz gráfica a pantallas más anchas (tablets/web).
 
-![Captura: Detalles de Habitación](<!-- REEMPLAZA ESTO CON LA RUTA O NOMBRE DE TU IMAGEN -->)
+![Diseño Responsivo](ruta/a/tu/captura_responsivo.jpg)
+*Figura 5: Vista de la aplicación adaptada a un formato de pantalla ancha.*
 
 ---
-
-## 3. Optimización en Reservas y Navegación
-Se implementaron soluciones lógicas para garantizar que la información mostrada siempre sea precisa y evitar cruces de datos.
-
-* **Prevención de Doble Reserva:** En el formulario de nueva reserva, el desplegable de selección de habitación filtra automáticamente las habitaciones que están en estado 'DISPONIBLE'. Esto impide categóricamente que el usuario pueda asignar una habitación que actualmente se encuentra en uso o en mantenimiento.
-* **Sincronización de Datos (Recarga Automática):** Se modificó la arquitectura de navegación de la barra inferior. Ahora, la aplicación realiza una petición a la API y obtiene datos frescos cada vez que el usuario cambia de pestaña, garantizando que los estados de las habitaciones estén sincronizados en tiempo real con las reservas recién creadas o modificadas.
-
-> **Nota:** Formulario de Nueva Reserva mostrando el desplegable de habitaciones que solo incluye las que están "Disponibles".
-
-![Captura: Formulario de Reservas y Sincronización](<!-- REEMPLAZA ESTO CON LA RUTA O NOMBRE DE TU IMAGEN -->)
+*Nota: Reemplaza los textos `ruta/a/tu/captura_...` con la ruta real o enlace donde hayas subido tus capturas de pantalla (por ejemplo, arrastrando las imágenes directamente aquí si usas GitHub).*

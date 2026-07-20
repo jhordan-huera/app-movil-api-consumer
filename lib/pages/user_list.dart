@@ -102,7 +102,7 @@ class _UserListState extends State<UserList> {
         ],
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 90.0),
+        padding: const EdgeInsets.only(bottom: 110.0), // Increased to avoid overlap with floating bottom nav
         child: FloatingActionButton.extended(
           heroTag: 'fab_users',
           onPressed: () => _abrirFormulario(),
@@ -168,85 +168,28 @@ class _UserListState extends State<UserList> {
                             ),
                           ],
                         )
-                      : ListView.builder(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 88), // Extra bottom padding for FAB
-                          itemCount: _users.length,
-                          itemBuilder: (context, index) {
-                            final user = _users[index];
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(16),
-                                onTap: () async {
-                                  final result = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => UserDetail(user: user)),
-                                  );
-                                  if (result == true) {
-                                    _cargarDatos();
-                                  }
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      width: 48,
-                                      height: 48,
-                                      decoration: BoxDecoration(
-                                        color: colorScheme.primary.withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Icon(Icons.person_rounded, color: colorScheme.primary),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            '${user.nombres} ${user.apellidos}',
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          _buildInfoRow(Icons.badge_outlined, user.cedula ?? ''),
-                                          if (user.email != null && user.email!.isNotEmpty)
-                                            _buildInfoRow(Icons.email_outlined, user.email!),
-                                          if (user.telefono != null && user.telefono!.isNotEmpty)
-                                            _buildInfoRow(Icons.phone_outlined, user.telefono!),
-                                          if (user.nacionalidad != null && user.nacionalidad!.isNotEmpty)
-                                            _buildInfoRow(Icons.flag_outlined, user.nacionalidad!),
-                                        ],
-                                      ),
-                                    ),
-                                    Column(
-                                      children: [
-                                        IconButton(
-                                          onPressed: () => _abrirFormulario(user: user),
-                                          icon: Icon(Icons.edit_rounded, color: colorScheme.primary),
-                                          tooltip: 'Editar',
-                                          constraints: const BoxConstraints(),
-                                          padding: const EdgeInsets.all(8),
-                                        ),
-                                        IconButton(
-                                          onPressed: () => _borrar(user: user),
-                                          icon: Icon(Icons.delete_outline_rounded, color: colorScheme.error),
-                                          tooltip: 'Borrar',
-                                          constraints: const BoxConstraints(),
-                                          padding: const EdgeInsets.all(8),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                      : LayoutBuilder(
+                          builder: (context, constraints) {
+                            if (constraints.maxWidth >= 600) {
+                              return GridView.builder(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                padding: const EdgeInsets.fromLTRB(16, 16, 16, 180), // Extra bottom padding for FAB and Nav
+                                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                                  maxCrossAxisExtent: 400,
+                                  mainAxisExtent: 170, // Altura aproximada de la tarjeta
+                                  crossAxisSpacing: 16,
+                                  mainAxisSpacing: 0,
                                 ),
-                              ),
-                            ),
-                          ).animate().slideY(begin: 0.1, delay: (index * 50).ms, duration: 400.ms, curve: Curves.easeOut).fade(duration: 400.ms);
+                                itemCount: _users.length,
+                                itemBuilder: (context, index) => _buildUserCard(_users[index], index, colorScheme),
+                              );
+                            }
+                            return ListView.builder(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 180), // Extra bottom padding for FAB and Nav
+                              itemCount: _users.length,
+                              itemBuilder: (context, index) => _buildUserCard(_users[index], index, colorScheme),
+                            );
                           },
                         ),
                 ),
@@ -275,5 +218,81 @@ class _UserListState extends State<UserList> {
         ],
       ),
     );
+  }
+
+  Widget _buildUserCard(UserModel user, int index, ColorScheme colorScheme) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => UserDetail(user: user)),
+          );
+          if (result == true) {
+            _cargarDatos();
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.person_rounded, color: colorScheme.primary),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${user.nombres} ${user.apellidos}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildInfoRow(Icons.badge_outlined, user.cedula ?? ''),
+                    if (user.email != null && user.email!.isNotEmpty)
+                      _buildInfoRow(Icons.email_outlined, user.email!),
+                    if (user.telefono != null && user.telefono!.isNotEmpty)
+                      _buildInfoRow(Icons.phone_outlined, user.telefono!),
+                    if (user.nacionalidad != null && user.nacionalidad!.isNotEmpty)
+                      _buildInfoRow(Icons.flag_outlined, user.nacionalidad!),
+                  ],
+                ),
+              ),
+              Column(
+                children: [
+                  IconButton(
+                    onPressed: () => _abrirFormulario(user: user),
+                    icon: Icon(Icons.edit_rounded, color: colorScheme.primary),
+                    tooltip: 'Editar',
+                    constraints: const BoxConstraints(),
+                    padding: const EdgeInsets.all(8),
+                  ),
+                  IconButton(
+                    onPressed: () => _borrar(user: user),
+                    icon: Icon(Icons.delete_outline_rounded, color: colorScheme.error),
+                    tooltip: 'Borrar',
+                    constraints: const BoxConstraints(),
+                    padding: const EdgeInsets.all(8),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).animate().slideY(begin: 0.1, delay: (index * 50).ms, duration: 400.ms, curve: Curves.easeOut).fade(duration: 400.ms);
   }
 }
